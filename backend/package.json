@@ -1,0 +1,31 @@
+{
+  "name": "@casl-poc/backend",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx src/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@casl-poc/shared": "^1.0.0",
+    "@casl/ability": "^6.7.2",
+    "@casl/prisma": "^1.4.1",
+    "@fastify/cors": "^9.0.1",
+    "@prisma/client": "^5.20.0",
+    "@ts-rest/fastify": "^3.51.0",
+    "@ts-rest/open-api": "^3.51.0",
+    "fastify": "^4.28.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "prisma": "^5.20.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.0.0"
+  }
+}
