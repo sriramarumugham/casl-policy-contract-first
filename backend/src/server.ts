@@ -41,13 +41,7 @@ declare module "fastify" {
   }
 }
 
-fastify.register(cors, {
-  origin: [
-    'http://localhost:3000',
-    'https://casl-policy-contract-first-frontend-lime.vercel.app'
-  ],
-  credentials: true
-});
+fastify.register(cors, { origin: true });
 
 fastify.addHook("preHandler", async (request, reply) => {
   const userId = parseInt(request.headers["user-id"] as string) || 1;
