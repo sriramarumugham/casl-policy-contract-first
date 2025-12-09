@@ -1,6 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "cd .. && npm run build --workspace=shared && npm run build --workspace=backend",
+  "installCommand": "cd .. && npm install",
   "rewrites": [
     {
       "source": "/(.*)",

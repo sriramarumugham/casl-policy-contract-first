@@ -39,6 +39,11 @@ const fastify = Fastify({
 
 fastify.register(cors, { origin: true });
 
+// Health check endpoint
+fastify.get("/health", async () => {
+  return { status: "ok", timestamp: new Date().toISOString() };
+});
+
 fastify.addHook("preHandler", async (request) => {
   const userId = parseInt(request.headers["user-id"] as string) || 1;
   const userRules = await getUserAbilityRules(userId);
@@ -173,5 +178,17 @@ s.registerRouter(appContract as any, router, fastify, {
   },
 });
 
-// Export Vercel handler
-export default awsLambdaFastify(fastify);
+// Export Vercel handler with error handling
+const handler = awsLambdaFastify(fastify);
+
+export default async (req: any, res: any) => {
+  try {
+    return await handler(req, res);
+  } catch (error) {
+    console.error("Handler error:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal server error", details: String(error) }),
+    };
+  }
+};
