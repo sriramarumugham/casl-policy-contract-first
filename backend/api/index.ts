@@ -6,8 +6,6 @@ import {
   appContract,
   APP_ABILITY_RULES,
   createAppAbility,
-  SUBJECTS,
-  ACTIONS,
   AppAbility,
 } from "@casl-poc/shared";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
@@ -39,7 +37,7 @@ const fastify = Fastify({ logger: true });
 
 fastify.register(cors, { origin: true });
 
-fastify.addHook("preHandler", async (request, reply) => {
+fastify.addHook("preHandler", async (request) => {
   const userId = parseInt(request.headers["user-id"] as string) || 1;
   const userRules = await getUserAbilityRules(userId);
   const ability = createAppAbility(userRules, { userId });
@@ -104,7 +102,7 @@ const router = s.router(appContract as any, {
       };
     },
 
-    deletePost: async ({ params, request }) => {
+    deletePost: async ({ params, request }: any) => {
       const ability = request.ability;
       const postId = parseInt(params.id);
       const post = await prisma.post.findUnique({ where: { id: postId } });
@@ -114,7 +112,7 @@ const router = s.router(appContract as any, {
           body: { error: "Post not found" } as any,
         };
       }
-      if (!ability.can("delete", { ...post, __typename: "Post" })) {
+      if (!ability.can("delete", { ...post, __typename: "Post" } as any)) {
         return {
           status: 403 as any,
           body: { error: "Cannot delete this post" } as any,
@@ -174,7 +172,7 @@ s.registerRouter(appContract as any, router, fastify, {
 });
 
 // Export handler for Vercel
-export default async (req: VercelRequest, res: VercelResponse) => {
+export default async (_req: VercelRequest, res: VercelResponse) => {
   await fastify.ready();
-  fastify.server.emit("request", req, res);
+  fastify.server.emit("request", _req, res);
 };
