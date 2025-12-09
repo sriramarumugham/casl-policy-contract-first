@@ -1,77 +1,25 @@
-# CASL Prisma POC - TypeScript REST API with Authorization
+# CASL + ts-rest Contract-First Authorization
 
-A complete POC implementation using TypeScript, ts-rest for OpenAPI contracts, Fastify backend, React frontend, and CASL for authorization with Zod validation.
+**TL;DR**: Define policies in contracts, auto-generate rules, use CASL everywhere.
 
-## 🚀 Features
+## Quick Start
 
-- **3 Core APIs**: View posts, Create posts, Delete own posts
-- **Auto-generated app policy** from contracts (hidden from Swagger)
-- **User-editable policies** via UI
-- **Complex conditions** in API contracts (e.g., `{{userId}}` templates)
-- **Frontend UI hiding** based on policy comparison
-- **OpenAPI documentation** generation
-- **Type-safe contracts** with ts-rest and Zod
-
-## 🏗️ Architecture
-
-```
-├── shared/          # Shared contracts and policy logic
-│   ├── contracts/   # ts-rest API contracts with policy metadata
-│   └── policy/      # Policy extraction and interpolation
-├── backend/         # Fastify server with CASL authorization
-│   ├── src/         # Server implementation
-│   └── prisma/      # Database schema
-└── frontend/        # React app with policy editor
-    └── src/         # Frontend components
+```bash
+npm install
+npm run db:push && npm run db:seed  
+npm run dev  # Backend :3001, Frontend :3000
 ```
 
-## 📋 Prerequisites
-
-- Node.js 18+
-- npm
-
-## 🎯 Quick Start
-
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Initialize database**:
-   ```bash
-   npm run db:push
-   npm run db:seed
-   ```
-
-3. **Start development servers**:
-   ```bash
-   npm run dev
-   ```
-
-   This will start:
-   - Backend at http://localhost:3001
-   - Frontend at http://localhost:3000
-   - Prisma Studio at http://localhost:5555
-
-4. **View documentation**:
-   - OpenAPI spec: http://localhost:3001/openapi.json
-   - Database UI: http://localhost:5555
-
-## 🔑 Key Components
-
-### Policy System
-
-The system automatically extracts authorization policies from ts-rest contracts:
+## 1. Add Policy to Contract
 
 ```typescript
-// Contracts include policy metadata (hidden from Swagger)
+// shared/src/contracts/posts.ts
+import { withPolicy } from '../utils/contract-helpers';
+
 deletePost: withPolicy({
-  subjects: ["Post"],
-  actions: ["delete"],
-  conditions: {
-    authorId: "{{userId}}" // Template variables
-  },
-  description: "Delete your own post",
+  subjects: "Post",
+  actions: "delete", 
+  conditions: { authorId: "{{userId}}" }
 })({
   method: "DELETE",
   path: "/posts/:id",
@@ -79,72 +27,66 @@ deletePost: withPolicy({
 })
 ```
 
-### Authorization Flow
+## 2. Backend Auto-Uses It
 
-1. **App Policy Generation**: Policies are auto-extracted from contracts
-2. **User Policy Storage**: Each user can customize their permissions
-3. **Policy Interpolation**: Template variables like `{{userId}}` are resolved
-4. **Frontend Authorization**: UI elements show/hide based on abilities
-5. **Backend Enforcement**: Same policies enforced on API calls
+```typescript
+// Auto-generated from contracts
+import { APP_ABILITY_RULES } from '@casl-poc/shared/generated/app-rules';
+import { createAppAbility } from '@casl-poc/shared/types/casl-types';
 
-### Demo Workflow
-
-1. **View Policy Editor**: Click "Edit Policy" button
-2. **Toggle Permissions**: Check/uncheck permissions for Post actions
-3. **See UI Changes**: Buttons appear/disappear based on your policy
-4. **Test Authorization**: Try creating/deleting posts with different policies
-
-## 🛠️ Development
-
-### Database Commands
-
-```bash
-npm run db:push      # Push schema changes
-npm run db:seed      # Seed with sample data
-npm run db:studio    # Start Prisma Studio only
+const ability = createAppAbility(userRules, { userId: req.userId });
+if (!ability.can('delete', 'Post')) throw new Error('Forbidden');
 ```
 
-### Build Commands
+## 3. Frontend Uses It
 
-```bash
-npm run build        # Build all workspaces
+```typescript
+// App.tsx - Create ability from JSON rules
+import { createTypedAbilityFromJSON } from '@casl-poc/shared';
+
+const ability = createTypedAbilityFromJSON(userRules);
+
+// Pass ability to components
+<PostCard post={post} ability={ability} onDelete={deletePost} />
 ```
 
-### Project Structure
+## 4. Components Use Ability
 
-- **Shared Package**: Common types and contracts
-- **Backend**: Fastify server with Prisma and CASL
-- **Frontend**: React SPA with Tailwind CSS
+```typescript
+// components/PostCard.tsx
+export function PostCard({ post, ability, onDelete }) {
+  return (
+    <div>
+      <h3>{post.title}</h3>
+      <PermissionGate ability={ability} action="delete" subject="Post">
+        <button onClick={() => onDelete(post.id)}>Delete</button>
+      </PermissionGate>
+    </div>
+  );
+}
 
-## 🔒 Security Features
+// components/PermissionGate.tsx
+export function PermissionGate({ ability, action, subject, children }) {
+  return ability.can(action, subject) ? <>{children}</> : null;
+}
+```
 
-- **Policy-based authorization** with CASL
-- **Type-safe contracts** prevent runtime errors  
-- **Template variables** for dynamic conditions
-- **Frontend/backend consistency** with shared contracts
+## Features
 
-## 📖 API Endpoints
+- **Contract-first**: Policies defined with API contracts
+- **Auto-generated**: Rules extracted automatically  
+- **Type-safe**: Full TypeScript support
+- **RawRule support**: Fields, conditions, inverted rules, reasons
+- **Template variables**: `{{userId}}` interpolation
+- **Swagger integration**: OpenAPI docs included
 
-- `GET /api/posts` - View posts (requires read permission)
-- `POST /api/posts` - Create post (requires create permission) 
-- `DELETE /api/posts/:id` - Delete post (requires delete permission + ownership)
-- `GET /api/policy/user` - Get user's policy
-- `PUT /api/policy/user` - Update user's policy
-- `GET /api/policy/schema` - Get app policy schema
+## Architecture
 
-## ✅ Status: **WORKING** 
+```
+Contract → Generator → JSON → Backend/Frontend
+```
 
-✅ **Build**: All packages compile successfully  
-✅ **Backend**: Fastify server with CASL authorization running on :3001  
-✅ **Frontend**: React app with policy editor running on :3000  
-✅ **Database**: SQLite with seeded data  
-✅ **API**: All endpoints functional with proper authorization  
-
-The POC demonstrates a complete authorization system where:
-- Policies are defined alongside API contracts
-- Users can customize their permissions via UI
-- UI adapts based on user abilities (buttons show/hide)
-- Backend enforces the same authorization rules
-- OpenAPI spec auto-generated from contracts
-
-Perfect for building secure, user-customizable applications! 🎉
+1. Define policy in contract with `withPolicy()`
+2. Generator extracts rules to JSON
+3. Backend/frontend import same rules
+4. CASL enforces permissions everywhere

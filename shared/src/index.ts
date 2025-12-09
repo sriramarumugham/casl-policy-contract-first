@@ -1,2 +1,8 @@
+// Contracts
 export * from './contracts/posts';
-export * from './policy/extractor';
+
+// CASL Types (defined first for type safety)
+export * from './types/casl-types';
+
+// Generated Rules (extracted from contracts)
+export * from './generated/app-rules';

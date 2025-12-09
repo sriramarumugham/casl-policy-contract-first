@@ -4,7 +4,9 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "generate:rules": "npx tsx src/generator/extract-rules.ts",
+    "prebuild": "npm run generate:rules"
   },
   "dependencies": {
     "@ts-rest/core": "^3.51.0",
@@ -12,6 +14,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.0.0"
   }
 }

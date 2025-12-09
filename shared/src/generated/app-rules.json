@@ -1,0 +1,27 @@
+{
+  "subjects": [
+    "Post"
+  ],
+  "actions": [
+    "read",
+    "create",
+    "delete"
+  ],
+  "rules": [
+    {
+      "action": "read",
+      "subject": "Post"
+    },
+    {
+      "action": "create",
+      "subject": "Post"
+    },
+    {
+      "action": "delete",
+      "subject": "Post",
+      "conditions": {
+        "authorId": "{{userId}}"
+      }
+    }
+  ]
+}
