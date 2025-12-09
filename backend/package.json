@@ -4,9 +4,10 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "prebuild": "cd ../shared && npm run build",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
-    "vercel-build": "prisma generate && prisma migrate deploy && tsc",
+    "vercel-build": "cd ../shared && npm run build && prisma generate && prisma migrate deploy && tsc",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",

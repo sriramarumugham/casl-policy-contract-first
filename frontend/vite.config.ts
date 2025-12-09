@@ -7,4 +7,12 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
   },
+  optimizeDeps: {
+    include: ['@casl-poc/shared'],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/@casl-poc\/shared/, /node_modules/],
+    },
+  },
 })

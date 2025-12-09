@@ -1,3 +1,5 @@
 {
-  "buildCommand": "cd ../shared && npm run build && cd ../backend"
+  "github": {
+    "silent": true
+  }
 }

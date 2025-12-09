@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd ../shared && npm run build && cd ../frontend && npm run build",
-  "outputDirectory": "dist"
-}

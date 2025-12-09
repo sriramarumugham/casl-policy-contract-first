@@ -9,7 +9,7 @@ import {
   Post,
   AppAction,
   AppSubject,
-} from "@casl-poc/shared";
+} from "../../shared/src/index";
 
 // 🎯 CASL-Powered Components
 import { CreatePostForm } from "./components/CreatePostForm";

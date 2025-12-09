@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "cd ../shared && npm run build",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
