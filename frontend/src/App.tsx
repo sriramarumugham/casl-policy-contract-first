@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { initClient } from "@ts-rest/core";
 import {
   appContract,
@@ -16,24 +16,31 @@ import { CreatePostForm } from "./components/CreatePostForm";
 import { PostsList } from "./components/PostsList";
 import { PolicyEditor } from "./components/PolicyEditor";
 
+// Helper function to create client with current user ID
+const createClient = (userId: number) => {
+  return initClient(appContract, {
+    baseUrl: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
+    baseHeaders: {
+      "user-id": userId.toString(),
+    },
+  });
+};
+
 export default function App() {
-  const [currentUserId, setCurrentUserId] = useState<number>(1);
+  const [currentUserId, setCurrentUserId] = useState<number>(() => {
+    const saved = localStorage.getItem("currentUserId");
+    return saved ? parseInt(saved) : 1;
+  });
   const [posts, setPosts] = useState<Post[]>([]);
   const [userRules, setUserRules] = useState<any[]>([]);
   const [appSchema, setAppSchema] = useState<any>({});
   const [showPolicyEditor, setShowPolicyEditor] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Create client dynamically based on current user
-  const client = initClient(appContract, {
-    baseUrl: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
-    baseHeaders: {
-      "user-id": currentUserId.toString(),
-    },
-  });
-
   // Create typed ability directly from JSON rules - with type safety!
-  const ability: AppAbility = createTypedAbilityFromJSON(userRules);
+  const ability: AppAbility = useMemo(() => {
+    return createTypedAbilityFromJSON(userRules);
+  }, [userRules]);
 
   useEffect(() => {
     loadData();
@@ -41,6 +48,7 @@ export default function App() {
 
   const loadData = async () => {
     setLoading(true);
+    const client = createClient(currentUserId);
     try {
       const [postsRes, policyRes, schemaRes] = await Promise.all([
         (client.posts as any).viewPosts(),
@@ -65,6 +73,7 @@ export default function App() {
   };
 
   const createPost = async (post: { title: string; content: string }) => {
+    const client = createClient(currentUserId);
     try {
       const res = await (client.posts as any).createPost({ body: post });
       if (res.status === 201) {
@@ -76,6 +85,7 @@ export default function App() {
   };
 
   const deletePost = async (postId: number) => {
+    const client = createClient(currentUserId);
     try {
       const res = await (client.posts as any).deletePost({
         params: { id: postId.toString() },
@@ -89,6 +99,7 @@ export default function App() {
   };
 
   const updateUserPolicy = async (newRules: any[]) => {
+    const client = createClient(currentUserId);
     try {
       const cleanRules = newRules.map((rule) => ({
         action: rule.action,
@@ -137,8 +148,8 @@ export default function App() {
   };
 
   const switchUser = (userId: number) => {
+    localStorage.setItem("currentUserId", userId.toString());
     setCurrentUserId(userId);
-    loadData();
   };
 
   return (
