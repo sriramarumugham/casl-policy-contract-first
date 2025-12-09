@@ -26,7 +26,7 @@ export default function App() {
 
   // Create client dynamically based on current user
   const client = initClient(appContract, {
-    baseUrl: "http://localhost:3001/api",
+    baseUrl: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
     baseHeaders: {
       "user-id": currentUserId.toString(),
     },
