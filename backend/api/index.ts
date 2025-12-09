@@ -2,13 +2,13 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { PrismaClient } from "@prisma/client";
 import { initServer } from "@ts-rest/fastify";
+import awsLambdaFastify from "@fastify/aws-lambda";
 import {
   appContract,
   APP_ABILITY_RULES,
   createAppAbility,
   AppAbility,
 } from "@casl-poc/shared";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const prisma = new PrismaClient();
 
@@ -33,7 +33,9 @@ declare module "fastify" {
 }
 
 // Create Fastify instance
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({
+  logger: false, // Disable logger for serverless
+});
 
 fastify.register(cors, { origin: true });
 
@@ -171,8 +173,5 @@ s.registerRouter(appContract as any, router, fastify, {
   },
 });
 
-// Export handler for Vercel
-export default async (_req: VercelRequest, res: VercelResponse) => {
-  await fastify.ready();
-  fastify.server.emit("request", _req, res);
-};
+// Export Vercel handler
+export default awsLambdaFastify(fastify);
