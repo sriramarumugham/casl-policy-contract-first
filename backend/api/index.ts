@@ -37,7 +37,13 @@ const fastify = Fastify({
   logger: false, // Disable logger for serverless
 });
 
-fastify.register(cors, { origin: true });
+fastify.register(cors, {
+  origin: [
+    'http://localhost:3000',
+    'https://casl-policy-contract-first-frontend-lime.vercel.app'
+  ],
+  credentials: true
+});
 
 // Health check endpoint
 fastify.get("/health", async () => {
