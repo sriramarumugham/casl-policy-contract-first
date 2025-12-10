@@ -39,6 +39,11 @@ const fastify = Fastify({
 
 fastify.register(cors, { origin: true });
 
+// Handle OPTIONS requests for CORS preflight
+fastify.options("*", async (request, reply) => {
+  reply.send();
+});
+
 // Health check endpoint
 fastify.get("/health", async () => {
   return { status: "ok", timestamp: new Date().toISOString() };
