@@ -37,11 +37,11 @@ const fastify = Fastify({
   logger: false, // Disable logger for serverless
 });
 
-fastify.register(cors, { origin: true });
-
-// Handle OPTIONS requests for CORS preflight
-fastify.options("*", async (request, reply) => {
-  reply.send();
+fastify.register(cors, {
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'user-id'],
 });
 
 // Health check endpoint
