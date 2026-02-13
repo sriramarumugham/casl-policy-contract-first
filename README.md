@@ -89,4 +89,4 @@ Contract → Generator → JSON → Backend/Frontend
 1. Define policy in contract with `withPolicy()`
 2. Generator extracts rules to JSON
 3. Backend/frontend import same rules
-4. CASL enforces permissions everywhere
+4. CASL enforces permissions everywhere# casl-prisma
